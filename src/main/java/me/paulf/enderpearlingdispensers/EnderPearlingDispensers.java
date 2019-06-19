@@ -9,6 +9,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityArmorStand;
 import net.minecraft.entity.item.EntityEnderPearl;
 import net.minecraft.entity.projectile.EntityThrowable;
+import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -79,13 +80,24 @@ public class EnderPearlingDispensers {
 							if (world.getBlockState(dstPos).getBlock().isReplaceable(world, dstPos)) {
 								final NBTTagCompound nbt = srcEntity.writeToNBT(new NBTTagCompound());
 								world.removeTileEntity(srcPos);
-								if (world.setBlockToAir(srcPos) && world.setBlockState(dstPos, srcState)) {
-									final TileEntity dstEntity = world.getTileEntity(dstPos);
-									if (dstEntity instanceof TileEntityDispenser) {
-										nbt.setInteger("x", dstPos.getX());
-										nbt.setInteger("y", dstPos.getY());
-										nbt.setInteger("z", dstPos.getZ());
-										dstEntity.readFromNBT(nbt);
+								final IBlockState air = Blocks.AIR.getDefaultState();
+								if (world.setBlockState(srcPos, air, 16)) {
+									if (world.setBlockState(dstPos, srcState)) {
+										world.notifyBlockUpdate(srcPos, srcState, air, 3);
+										final TileEntity dstEntity = world.getTileEntity(dstPos);
+										if (dstEntity instanceof TileEntityDispenser) {
+											nbt.setInteger("x", dstPos.getX());
+											nbt.setInteger("y", dstPos.getY());
+											nbt.setInteger("z", dstPos.getZ());
+											dstEntity.readFromNBT(nbt);
+										}
+									} else {
+										// Initial setBlockState will not guarantee the specified state is set as Block#onBlockAdded may change facing
+										world.setBlockState(srcPos, srcState);
+										// Now that block is set the specific state can be changed with full control
+										world.setBlockState(srcPos, srcState);
+										srcEntity.validate();
+										world.setTileEntity(srcPos, srcEntity);
 									}
 								} else {
 									srcEntity.validate();
