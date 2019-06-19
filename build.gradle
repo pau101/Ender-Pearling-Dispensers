@@ -1,0 +1,48 @@
+buildscript {
+	repositories {
+		jcenter()
+		maven {
+			url "http://files.minecraftforge.net/maven"
+		}
+	}
+	dependencies {
+		classpath "net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT"
+	}
+}
+
+apply plugin: "net.minecraftforge.gradle.forge"
+
+version = "${modVersion}-1.12.2"
+group = "me.paulf.enderpearlingdispensers"
+archivesBaseName = "enderpearlingdispensers"
+sourceCompatibility = JavaVersion.VERSION_1_8
+
+minecraft {
+	version = "1.12.2-${project.forgeVersion}"
+	runDir = "run"
+	mappings = project.mcpVersion
+	makeObfSourceJar = false
+}
+
+// workaround for FML DirectoryDiscoverer limitations
+sourceSets {
+	main {
+		output.resourcesDir = output.classesDir
+	}
+}
+
+jar {
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+// end workaround
+
+processResources {
+	def vars = [
+		"version": project.modVersion,
+		"forgeVersion": project.forgeVersion
+	]
+	inputs.properties(vars)
+	from("src/main/template-resources") {
+		expand(vars)
+	}
+}

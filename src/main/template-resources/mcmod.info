@@ -1,0 +1,11 @@
+[{
+	"modid": "enderpearlingdispensers",
+	"name": "Ender Pearling Dispensers",
+	"version": "${version}",
+	"description": "Ender Pearling Dispensers of course.",
+	"url": "https://minecraft.curseforge.com/projects/ender-pearling-dispensers",
+	"authorList": [ "pau101" ],
+	"useDependencyInformation": true,
+	"dependencies": [ "forge@[${forgeVersion},)" ],
+	"requiredMods": [ "forge@[${forgeVersion},)" ]
+}]

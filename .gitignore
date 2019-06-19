@@ -1,0 +1,17 @@
+bin/
+classes/
+.minecraft/
+run/
+lib/
+dev/
+eclipse/
+.settings/
+.classpath
+.project
+*.iml
+*.ipr
+*.iws
+out/
+.gradle/
+build/
+server_run/
