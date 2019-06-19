@@ -1,48 +1,68 @@
 buildscript {
 	repositories {
-		jcenter()
 		maven {
 			url "http://files.minecraftforge.net/maven"
 		}
+		jcenter()
+		mavenCentral()
 	}
 	dependencies {
-		classpath "net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT"
+		classpath group: "net.minecraftforge.gradle", name: "ForgeGradle", version: "3.+", changing: true
 	}
 }
 
-apply plugin: "net.minecraftforge.gradle.forge"
+apply plugin: "net.minecraftforge.gradle"
 
-version = "${modVersion}-1.12.2"
+version = "1.0.1"
 group = "me.paulf.enderpearlingdispensers"
 archivesBaseName = "enderpearlingdispensers"
 sourceCompatibility = JavaVersion.VERSION_1_8
 
 minecraft {
-	version = "1.12.2-${project.forgeVersion}"
-	runDir = "run"
-	mappings = project.mcpVersion
-	makeObfSourceJar = false
-}
-
-// workaround for FML DirectoryDiscoverer limitations
-sourceSets {
-	main {
-		output.resourcesDir = output.classesDir
+	mappings channel: "snapshot", version: "20180921-1.13"
+	runs {
+		client {
+			workingDirectory project.file("run")
+			property "forge.logging.markers", "SCAN,REGISTRIES,REGISTRYDUMP"
+			property "forge.logging.console.level", "debug"
+			mods {
+				enderpearlingdispensers {
+					source sourceSets.main
+				}
+			}
+		}
+		server {
+			workingDirectory project.file("run")
+			property "forge.logging.markers", "SCAN,REGISTRIES,REGISTRYDUMP"
+			property "forge.logging.console.level", "debug"
+			mods {
+				enderpearlingdispensers {
+					source sourceSets.main
+				}
+			}
+		}
 	}
 }
 
 jar {
-	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+	classifier "1.13.2"
 }
-// end workaround
+
+dependencies {
+	minecraft "net.minecraftforge:forge:1.13.2-25.0.219"
+}
 
 processResources {
 	def vars = [
-		"version": project.modVersion,
-		"forgeVersion": project.forgeVersion
+		"version": project.version
 	]
 	inputs.properties(vars)
-	from("src/main/template-resources") {
+	from(sourceSets.main.resources.srcDirs) {
+		include("META-INF/mods.toml")
 		expand(vars)
 	}
+	from (sourceSets.main.resources.srcDirs) {
+		exclude("META-INF/mods.toml")
+	}
 }
+

@@ -1,0 +1,22 @@
+modLoader="javafml"
+loaderVersion="[25,)"
+issueTrackerURL="https://github.com/pau101/Ender-Pearling-Dispensers/issues"
+[[mods]]
+    modId="enderpearlingdispensers"
+    version="${version}"
+    displayName="Ender Pearling Dispensers"
+    displayURL="https://minecraft.curseforge.com/projects/ender-pearling-dispensers"
+    authors="pau101"
+    description="Ender Pearling Dispensers of course."
+[[dependencies.enderpearlingdispensers]]
+    modId="forge"
+    mandatory=true
+    versionRange="[25,)"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.enderpearlingdispensers]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.13.2]"
+    ordering="NONE"
+    side="BOTH"

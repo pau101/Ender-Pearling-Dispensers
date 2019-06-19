@@ -4,6 +4,7 @@ classes/
 run/
 lib/
 dev/
+.idea/
 eclipse/
 .settings/
 .classpath
