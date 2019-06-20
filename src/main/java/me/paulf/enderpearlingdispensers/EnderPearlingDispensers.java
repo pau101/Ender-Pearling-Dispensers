@@ -87,7 +87,7 @@ public class EnderPearlingDispensers {
 							world.removeTileEntity(srcPos);
 							if (world.setBlockState(srcPos, air, Constants.BlockFlags./*NO_*/UPDATE_NEIGHBORS)) {
 								if (world.setBlockState(dstPos, srcState)) {
-									world.notifyBlockUpdate(srcPos, srcState, air, Constants.BlockFlags.DEFAULT);
+									world.markAndNotifyBlock(srcPos, world.getChunk(srcPos), srcState, air, Constants.BlockFlags.DEFAULT);
 									final TileEntity dstEntity = world.getTileEntity(dstPos);
 									if (dstEntity instanceof TileEntityDispenser) {
 										nbt.setInt("x", dstPos.getX());
