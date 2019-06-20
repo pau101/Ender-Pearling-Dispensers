@@ -83,7 +83,7 @@ public class EnderPearlingDispensers {
 								final IBlockState air = Blocks.AIR.getDefaultState();
 								if (world.setBlockState(srcPos, air, 16)) {
 									if (world.setBlockState(dstPos, srcState)) {
-										world.notifyBlockUpdate(srcPos, srcState, air, 3);
+										world.markAndNotifyBlock(srcPos, world.getChunk(srcPos), srcState, air, 3);
 										final TileEntity dstEntity = world.getTileEntity(dstPos);
 										if (dstEntity instanceof TileEntityDispenser) {
 											nbt.setInteger("x", dstPos.getX());
