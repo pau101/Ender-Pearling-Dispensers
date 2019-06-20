@@ -13,7 +13,7 @@ buildscript {
 
 apply plugin: "net.minecraftforge.gradle"
 
-version = "1.0.1"
+version = "1.0.2"
 group = "me.paulf.enderpearlingdispensers"
 archivesBaseName = "enderpearlingdispensers"
 sourceCompatibility = JavaVersion.VERSION_1_8
