@@ -1,22 +1,24 @@
 package me.paulf.enderpearlingdispensers;
 
-import net.minecraft.block.BlockDispenser;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.dispenser.BehaviorDefaultDispenseItem;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.block.DispenserBlock;
+import net.minecraft.dispenser.DefaultDispenseItemBehavior;
 import net.minecraft.dispenser.IBlockSource;
 import net.minecraft.dispenser.IPosition;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.item.EntityArmorStand;
-import net.minecraft.entity.item.EntityEnderPearl;
-import net.minecraft.entity.projectile.EntityThrowable;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.item.ArmorStandEntity;
+import net.minecraft.entity.item.EnderPearlEntity;
+import net.minecraft.entity.projectile.ThrowableEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.item.Items;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.tileentity.DispenserTileEntity;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityDispenser;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
@@ -42,14 +44,14 @@ public class EnderPearlingDispensers {
 	}
 
 	private void onInit(final FMLCommonSetupEvent event) {
-		BlockDispenser.registerDispenseBehavior(Items.ENDER_PEARL, new BehaviorDefaultDispenseItem() {
-			private final Method setMarker = ObfuscationReflectionHelper.findMethod(EntityArmorStand.class, "func_181027_m", boolean.class);
+		DispenserBlock.registerDispenseBehavior(Items.ENDER_PEARL, new DefaultDispenseItemBehavior() {
+			private final Method setMarker = ObfuscationReflectionHelper.findMethod(ArmorStandEntity.class, "func_181027_m", boolean.class);
 
 			@Override
 			public ItemStack dispenseStack(final IBlockSource source, final ItemStack stack) {
 				final World world = source.getWorld();
-				final EntityArmorStand dummy = new EntityArmorStand(world);
-				final EntityEnderPearl pearl = new EntityEnderPearl(world, dummy);
+				final ArmorStandEntity dummy = EntityType.ARMOR_STAND.create(world);
+				final EnderPearlEntity pearl = new EnderPearlEntity(world, dummy);
 				dummy.moveToBlockPosAndAngles(source.getBlockPos(), 0.0F, 0.0F);
 				dummy.setInvisible(true);
 				dummy.setNoGravity(true);
@@ -58,41 +60,42 @@ public class EnderPearlingDispensers {
 				} catch (final IllegalAccessException | InvocationTargetException e) {
 					throw new RuntimeException(e);
 				}
-				final IPosition pearlPos = BlockDispenser.getDispensePosition(source);
+				final IPosition pearlPos = DispenserBlock.getDispensePosition(source);
 				pearl.setPosition(pearlPos.getX(), pearlPos.getY(), pearlPos.getZ());
-				final EnumFacing facing = source.getBlockState().get(BlockDispenser.FACING);
+				final Direction facing = source.getBlockState().get(DispenserBlock.FACING);
 				pearl.shoot(facing.getXOffset(), facing.getYOffset() + 0.1D, facing.getZOffset(), 1.5F, 1.0F);
 				pearl.addTag(DISPENSED);
-				world.spawnEntity(dummy);
-				world.spawnEntity(pearl);
+				world.func_217376_c(dummy);
+				world.func_217376_c(pearl);
 				stack.shrink(1);
 				return stack;
 			}
 		});
 		MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, (final ProjectileImpactEvent.Throwable e) -> {
-			final EntityThrowable throwable = e.getThrowable();
-			final EntityLivingBase thrower = throwable.getThrower();
+			final ThrowableEntity throwable = e.getThrowable();
+			final LivingEntity thrower = throwable.getThrower();
 			final RayTraceResult trace = e.getRayTraceResult();
 			final World world = throwable.world;
-			if (!world.isRemote && throwable instanceof EntityEnderPearl && thrower instanceof EntityArmorStand && throwable.removeTag(DISPENSED)) {
-				if (trace.type == RayTraceResult.Type.BLOCK) {
+			if (!world.isRemote && throwable instanceof EnderPearlEntity && thrower instanceof ArmorStandEntity && throwable.removeTag(DISPENSED)) {
+				if (trace.getType() == RayTraceResult.Type.BLOCK) {
+					final BlockRayTraceResult blockTrace = (BlockRayTraceResult) trace;
 					final BlockPos srcPos = new BlockPos(thrower);
-					final IBlockState srcState = world.getBlockState(srcPos);
+					final BlockState srcState = world.getBlockState(srcPos);
 					final TileEntity srcEntity = world.getTileEntity(srcPos);
-					if (srcState.getBlock() instanceof BlockDispenser && srcEntity instanceof TileEntityDispenser) {
-						final BlockPos dstPos = trace.getBlockPos().offset(trace.sideHit);
+					if (srcState.getBlock() instanceof DispenserBlock && srcEntity instanceof DispenserTileEntity) {
+						final BlockPos dstPos = blockTrace.getPos().offset(blockTrace.getFace());
 						if (world.getBlockState(dstPos).getMaterial().isReplaceable()) {
-							final NBTTagCompound nbt = srcEntity.write(new NBTTagCompound());
-							final IBlockState air = Blocks.AIR.getDefaultState();
+							final CompoundNBT nbt = srcEntity.write(new CompoundNBT());
+							final BlockState air = Blocks.AIR.getDefaultState();
 							world.removeTileEntity(srcPos);
 							if (world.setBlockState(srcPos, air, Constants.BlockFlags./*NO_*/UPDATE_NEIGHBORS)) {
 								if (world.setBlockState(dstPos, srcState)) {
 									world.notifyBlockUpdate(srcPos, srcState, air, Constants.BlockFlags.DEFAULT);
 									final TileEntity dstEntity = world.getTileEntity(dstPos);
-									if (dstEntity instanceof TileEntityDispenser) {
-										nbt.setInt("x", dstPos.getX());
-										nbt.setInt("y", dstPos.getY());
-										nbt.setInt("z", dstPos.getZ());
+									if (dstEntity instanceof DispenserTileEntity) {
+										nbt.putInt("x", dstPos.getX());
+										nbt.putInt("y", dstPos.getY());
+										nbt.putInt("z", dstPos.getZ());
 										dstEntity.read(nbt);
 									}
 								} else {

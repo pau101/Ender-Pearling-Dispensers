@@ -19,7 +19,7 @@ archivesBaseName = "enderpearlingdispensers"
 sourceCompatibility = JavaVersion.VERSION_1_8
 
 minecraft {
-	mappings channel: "snapshot", version: "20180921-1.13"
+	mappings channel: "snapshot", version: "20190608-1.14.2"
 	runs {
 		client {
 			workingDirectory project.file("run")
@@ -45,11 +45,11 @@ minecraft {
 }
 
 jar {
-	classifier "1.13.2"
+	classifier "1.14.2"
 }
 
 dependencies {
-	minecraft "net.minecraftforge:forge:1.13.2-25.0.219"
+	minecraft "net.minecraftforge:forge:1.14.2-26.0.35"
 }
 
 processResources {
